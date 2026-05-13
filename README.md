@@ -205,7 +205,7 @@ After the package is published, documentation should be available on HexDocs.
 
 ## Requirements
 
-- Elixir `~> 1.18`
+- Elixir `~> 1.17`
 - Docker CLI and daemon, when checking real Docker availability at runtime
 
 ## License
