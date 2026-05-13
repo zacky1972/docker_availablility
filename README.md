@@ -6,12 +6,24 @@ It checks more than the presence of the `docker` command. A host may have the Do
 
 ## Installation
 
-Add `docker_availability` to your list of dependencies in `mix.exs`:
+When the package is published to Hex, add `docker_availability` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:docker_availability, "~> 1.0.0"}
+    {:docker_availability, "~> 0.1.0"}
+  ]
+end
+```
+
+During development, you can also depend on this repository directly:
+
+```elixir
+def deps do
+  [
+    {:docker_availability,
+     github: "zacky1972/docker_availablility",
+     branch: "main"}
   ]
 end
 ```
@@ -198,16 +210,4 @@ After the package is published, documentation should be available on HexDocs.
 
 ## License
 
-Copyright (c) 2026 University of Kitakyushu
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-See [LICENSE.md](LICENSE.md).
+Apache-2.0. See [LICENSE.md](LICENSE.md).

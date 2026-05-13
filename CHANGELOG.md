@@ -1,5 +1,9 @@
 # Changelog
 
-## v0.1.0
+## v1.0.0
 
-- TODO: write changelog
+  * Initial release.
+  * Add `DockerAvailability.executable/0` for locating the Docker CLI executable in `PATH`.
+  * Add `DockerAvailability.available?/0` as a boolean convenience check for Docker usability.
+  * Add `DockerAvailability.check/0` for collecting Docker executable, client version, and server version diagnostics.
+  * Add unit tests using a fake `docker` executable so the test suite does not require a running Docker daemon or Docker images.

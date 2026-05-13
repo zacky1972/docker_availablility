@@ -1,15 +1,20 @@
 defmodule DockerAvailability.MixProject do
   use Mix.Project
 
+  @version "1.0.0"
+  @source_url "https://github.com/zacky1972/docker_availablility"
+
   def project do
     [
       app: :docker_availability,
-      version: "1.0.0",
+      version: @version,
       elixir: "~> 1.19",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      name: "Docker availability",
-      description: "A small Elixir probe for checking whether Docker is installed and usable.",
+      name: "DockerAvailability",
+      description: description(),
+      source_url: @source_url,
+      homepage_url: @source_url,
       docs: docs(),
       package: package(),
       aliases: aliases(),
@@ -24,24 +29,38 @@ defmodule DockerAvailability.MixProject do
     ]
   end
 
-  def docs do
+  def cli do
     [
-      main: "readme",
-      extras: ["README.md"]
+      preferred_envs: [precommit: :test]
     ]
   end
 
-  def package do
+  defp description do
+    "A small Elixir probe for checking whether Docker is installed and usable."
+  end
+
+  defp docs do
     [
-      name: :docker_availability,
+      main: "readme",
+      extras: ["README.md", "CHANGELOG.md"],
+      source_ref: "v#{@version}",
+      source_url: @source_url
+    ]
+  end
+
+  defp package do
+    [
+      name: "docker_availability",
+      files: ~w(lib .formatter.exs mix.exs README.md LICENSE.md CHANGELOG.md),
       licenses: ["Apache-2.0"],
       links: %{
-        "GitHub" => "https://github.com/zacky1972/docker_availablility"
+        "GitHub" => @source_url,
+        "Changelog" => @source_url <> "/blob/main/CHANGELOG.md"
       }
     ]
   end
 
-  def aliases do
+  defp aliases do
     [
       check: [
         "hex.audit",
@@ -65,13 +84,7 @@ defmodule DockerAvailability.MixProject do
     ]
   end
 
-  def cli do
-    [
-      preferred_envs: [precommit: :test]
-    ]
-  end
-
-  def dialyzer do
+  defp dialyzer do
     [
       plt_add_apps: [:mix],
       ignore_warnings: ".dialyzer_ignore.exs"
@@ -81,13 +94,11 @@ defmodule DockerAvailability.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:nstandard, "~> 0.3"},
+      {:nstandard, "~> 0.3", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.40", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:spellweaver, "~> 0.1", only: [:dev, :test], runtime: false}
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
     ]
   end
 end
