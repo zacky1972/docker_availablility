@@ -4,12 +4,12 @@ defmodule DockerAvailability.MixProject do
   def project do
     [
       app: :docker_availability,
-      version: "0.1.0",
+      version: "1.0.0",
       elixir: "~> 1.19",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       name: "Docker availability",
-      description: "TODO: write a proper description",
+      description: "A small Elixir probe for checking whether Docker is installed and usable.",
       docs: docs(),
       package: package(),
       aliases: aliases(),
@@ -35,7 +35,9 @@ defmodule DockerAvailability.MixProject do
     [
       name: :docker_availability,
       licenses: ["Apache-2.0"],
-      links: %{"GitHub" => "https://github.com/TODO/docker_availability"}
+      links: %{
+        "GitHub" => "https://github.com/zacky1972/docker_availablility"
+      }
     ]
   end
 
