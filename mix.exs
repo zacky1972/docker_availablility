@@ -65,7 +65,7 @@ defmodule DockerAvailability.MixProject do
       check: [
         "hex.audit",
         "compile --warnings-as-errors --force",
-        "format --check-formatted --migrate",
+        "format --check-formatted",
         "credo",
         "deps.unlock --check-unused",
         "spellweaver.check",
@@ -74,7 +74,7 @@ defmodule DockerAvailability.MixProject do
       precommit: [
         "hex.audit",
         "compile --warnings-as-errors --force",
-        "format --migrate",
+        "format",
         "credo",
         "deps.unlock --unused",
         "spellweaver.check",
