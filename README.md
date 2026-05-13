@@ -22,7 +22,7 @@ During development, you can also depend on this repository directly:
 def deps do
   [
     {:docker_availability,
-     github: "zacky1972/docker_availablility",
+     github: "zacky1972/docker_availability",
      branch: "main"}
   ]
 end
