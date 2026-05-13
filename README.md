@@ -11,7 +11,7 @@ When the package is published to Hex, add `docker_availability` to your list of 
 ```elixir
 def deps do
   [
-    {:docker_availability, "~> 0.1.0"}
+    {:docker_availability, "~> 1.0.0"}
   ]
 end
 ```
