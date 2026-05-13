@@ -1,14 +1,14 @@
 defmodule DockerAvailability.MixProject do
   use Mix.Project
 
-  @version "1.0.0"
+  @version "1.0.1"
   @source_url "https://github.com/zacky1972/docker_availability"
 
   def project do
     [
       app: :docker_availability,
       version: @version,
-      elixir: "~> 1.19",
+      elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       name: "DockerAvailability",
