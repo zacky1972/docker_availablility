@@ -1,7 +1,7 @@
 name: Run other versions
 
 on:
-  workflows_run:
+  workflow_run:
     workflows:
       - 'Elixir CI'
     types:
