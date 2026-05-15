@@ -7,15 +7,64 @@ defmodule DockerAvailability do
   the `docker` command installed while the daemon is stopped, unreachable, or
   inaccessible to the current user.
 
-  `executable/0` only checks whether the `docker` executable can be found in
-  `PATH`. `check/0` performs the full availability check by running Docker
-  version commands and collecting the client and server versions. `available?/0`
-  is a boolean convenience wrapper around `check/0`.
+  ## Which function should I use?
+
+    * Use `available?/0` when the caller only needs a boolean yes/no answer.
+    * Use `executable/0` when the caller needs to know whether the Docker CLI
+      is installed and where it is located.
+    * Use `check/0` when the caller needs diagnostics, version information, or
+      structured error handling.
+
+  ## Return shapes
+
+  `executable/0` returns either:
+
+      {:ok, "/usr/bin/docker"}
+      {:error, :docker_not_found}
+
+  `available?/0` returns either:
+
+      true
+      false
+
+  `check/0` returns either:
+
+      {:ok,
+       %{
+         executable: "/usr/bin/docker",
+         client_version: "24.0.0",
+         server_version: "24.0.0"
+       }}
+
+  or one of these error tuples:
+
+      {:error, :docker_not_found}
+      {:error, {:docker_command_failed, status, output}}
+      {:error, {:docker_unavailable, status, output}}
+
+  ## Error reasons
+
+    * `:docker_not_found` means no `docker` executable could be found in `PATH`.
+    * `{:docker_command_failed, status, output}` means the Docker executable was
+      found, but a Docker command failed while retrieving client information.
+    * `{:docker_unavailable, status, output}` means the Docker client exists,
+      but the Docker server or daemon is stopped, unreachable, or inaccessible
+      to the current user.
+
+  `status` is the Docker command exit status. `output` is the trimmed combined
+  standard output and standard error from the Docker command.
 
   The functions in this module do not install Docker, start the Docker daemon,
   or modify Docker state.
   """
 
+  @typedoc """
+  Result returned by `check/0`.
+
+  Successful results contain the resolved Docker executable path and the client
+  and server version values reported by Docker. Error results contain one of the
+  documented Docker availability reasons.
+  """
   @type check_result ::
           {:ok,
            %{
@@ -25,6 +74,15 @@ defmodule DockerAvailability do
            }}
           | {:error, reason()}
 
+  @typedoc """
+  Error reason returned by `check/0`.
+
+    * `:docker_not_found` means no `docker` executable could be found in `PATH`.
+    * `{:docker_command_failed, status, output}` means a Docker command failed
+      while retrieving client information.
+    * `{:docker_unavailable, status, output}` means the Docker server or daemon
+      was not available to the current process.
+  """
   @type reason ::
           :docker_not_found
           | {:docker_command_failed, non_neg_integer(), String.t()}
@@ -36,9 +94,15 @@ defmodule DockerAvailability do
   This function searches for `docker` in the current process `PATH` by using
   `System.find_executable/1`.
 
-  Returns `{:ok, path}` when the executable is found.
+  Return values:
 
-  Returns `{:error, :docker_not_found}` when the executable is not available in
+      {:ok, "/usr/bin/docker"}
+      {:error, :docker_not_found}
+
+  `{:ok, path}` means the executable was found. `path` is the resolved path
+  returned by the current process environment.
+
+  `{:error, :docker_not_found}` means no `docker` executable was available in
   `PATH`.
 
   This function does not check whether the Docker daemon is running. Use
@@ -56,6 +120,11 @@ defmodule DockerAvailability do
   Returns whether Docker is installed and usable.
 
   This is a boolean convenience wrapper around `check/0`.
+
+  Return values:
+
+      true
+      false
 
   Returns `true` only when all of the following conditions are satisfied:
 
@@ -81,23 +150,40 @@ defmodule DockerAvailability do
   executable with `executable/0`, then runs Docker version commands to obtain
   both the client and server versions.
 
-  Returns `{:ok, info}` when Docker is usable. The returned map contains:
+  Returns `{:ok, info}` when Docker is usable:
+
+      {:ok,
+       %{
+         executable: "/usr/bin/docker",
+         client_version: "24.0.0",
+         server_version: "24.0.0"
+       }}
+
+  The returned map contains:
 
     * `:executable` - the resolved path to the Docker executable
     * `:client_version` - the Docker client version reported by the executable
     * `:server_version` - the Docker server version reported by the daemon
 
+  The version fields are intended to be strings returned by Docker version
+  commands.
+
   Returns one of the following error tuples:
 
-    * `{:error, :docker_not_found}` when the `docker` executable cannot be found
-      in `PATH`
-    * `{:error, {:docker_command_failed, status, output}}` when a Docker client
-      command fails before daemon availability is established
-    * `{:error, {:docker_unavailable, status, output}}` when the Docker server
-      version cannot be queried, typically because the Docker daemon is stopped,
-      unreachable, or inaccessible to the current user
+      {:error, :docker_not_found}
+      {:error, {:docker_command_failed, status, output}}
+      {:error, {:docker_unavailable, status, output}}
 
-  `status` is the command exit status and `output` is the trimmed combined
+  Error reasons:
+
+    * `:docker_not_found` means no `docker` executable could be found in `PATH`.
+    * `{:docker_command_failed, status, output}` means the Docker executable was
+      found, but a Docker command failed while retrieving client information.
+    * `{:docker_unavailable, status, output}` means the Docker client exists,
+      but the Docker server or daemon is stopped, unreachable, or inaccessible
+      to the current user.
+
+  `status` is the Docker command exit status. `output` is the trimmed combined
   standard output and standard error from the Docker command.
   """
   @spec check() :: check_result()
@@ -106,11 +192,7 @@ defmodule DockerAvailability do
          {:ok, client_version} <- docker_version(docker, "Client.Version"),
          {:ok, server_version} <- docker_version(docker, "Server.Version") do
       {:ok,
-       %{
-         executable: docker,
-         client_version: client_version,
-         server_version: server_version
-       }}
+       %{executable: docker, client_version: client_version, server_version: server_version}}
     end
   end
 
@@ -128,7 +210,6 @@ defmodule DockerAvailability do
         {:error, {:docker_command_failed, status, String.trim(output)}}
     end
   rescue
-    e in ErlangError ->
-      {:error, {:docker_command_failed, 127, Exception.message(e)}}
+    e in ErlangError -> {:error, {:docker_command_failed, 127, Exception.message(e)}}
   end
 end
