@@ -191,8 +191,7 @@ defmodule DockerAvailability do
     with {:ok, docker} <- executable(),
          {:ok, client_version} <- docker_version(docker, "Client.Version"),
          {:ok, server_version} <- docker_version(docker, "Server.Version") do
-      {:ok,
-       %{executable: docker, client_version: client_version, server_version: server_version}}
+      {:ok, %{executable: docker, client_version: client_version, server_version: server_version}}
     end
   end
 
