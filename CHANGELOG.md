@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.4
+
+  * Update docs.
+
 ## v1.0.3
 
   * Correct License notice in README.md.

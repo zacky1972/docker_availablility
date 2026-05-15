@@ -1,7 +1,7 @@
 defmodule DockerAvailability.MixProject do
   use Mix.Project
 
-  @version "1.0.3"
+  @version "1.0.4"
   @source_url "https://github.com/zacky1972/docker_availability"
 
   def project do
