@@ -62,15 +62,15 @@ defmodule DockerAvailability do
   Result returned by `check/0`.
 
   Successful results contain the resolved Docker executable path and the client
-  and server version values reported by Docker. Error results contain one of the
+  and server version strings reported by Docker. Error results contain one of the
   documented Docker availability reasons.
   """
   @type check_result ::
           {:ok,
            %{
              executable: Path.t(),
-             client_version: String.t() | nil,
-             server_version: String.t() | nil
+             client_version: String.t(),
+             server_version: String.t()
            }}
           | {:error, reason()}
 
