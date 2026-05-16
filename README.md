@@ -124,6 +124,10 @@ It returns `false` for all error cases, including a missing executable, a failed
 
 Use `check/0` instead when the caller needs to know why Docker is not available.
 
+This function is limited to resolving the `docker` executable from the current process `PATH`. It does not run Docker commands, query Docker client or server version information, or verify Docker daemon reachability.
+
+When the executable is found, the returned `path` is the resolved path returned by `System.find_executable/1` and is not modified by this library.
+
 ### `DockerAvailability.check/0`
 
 Performs the full availability check. It verifies that:
@@ -131,6 +135,19 @@ Performs the full availability check. It verifies that:
 1. the `docker` executable exists in `PATH`
 2. the Docker client version can be queried
 3. the Docker server version can be queried
+
+Probe order:
+
+1. Resolve the Docker executable by calling `DockerAvailability.executable/0`.
+2. Run the resolved executable with the argument list `["version", "--format", "{{.Client.Version}}"]`.
+3. Only if the client-version command succeeds, run the same resolved executable with the argument list `["version", "--format", "{{.Server.Version}}"]`.
+
+In shell form, the version probes are equivalent to:
+
+```sh
+/path/to/docker version --format '{{.Client.Version}}'
+/path/to/docker version --format '{{.Server.Version}}'
+```
 
 Returns `{:ok, info}` when Docker is usable:
 
@@ -151,6 +168,12 @@ The `info` map contains:
 | `:client_version` | The Docker client version reported by the executable. |
 | `:server_version` | The Docker server version reported by the daemon. |
 
+The `:client_version` value is the trimmed output of the client-version command when that command exits with status `0`.
+
+The `:server_version` value is the trimmed output of the server-version command when that command exits with status `0`.
+
+Both version fields are returned as opaque strings. This library does not parse, normalize, or validate Docker version syntax beyond trimming surrounding whitespace.
+
 The version fields are intended to be strings returned by Docker version commands.
 
 Returns one of the following errors:
@@ -166,6 +189,10 @@ Returns one of the following errors:
 | `:docker_not_found` | No `docker` executable could be found in `PATH`. |
 | `{:docker_command_failed, status, output}` | The Docker executable was found, but a Docker command failed while retrieving client information. |
 | `{:docker_unavailable, status, output}` | The Docker client exists, but the Docker server or daemon is stopped, unreachable, or inaccessible to the current user. |
+
+If the client-version command fails, `check/0` returns `{:error, {:docker_command_failed, status, output}}`.
+
+If the server-version command fails, `check/0` returns `{:error, {:docker_unavailable, status, output}}`.
 
 `status` is the Docker command exit status. `output` is the trimmed combined standard output and standard error from the Docker command.
 
