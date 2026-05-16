@@ -107,6 +107,13 @@ defmodule DockerAvailability do
 
   This function does not check whether the Docker daemon is running. Use
   `check/0` or `available?/0` when daemon connectivity also matters.
+
+  This function is limited to resolving the `docker` executable from the current
+  process `PATH`. It does not run Docker commands, query Docker client or server
+  version information, or verify Docker daemon reachability.
+
+  When the executable is found, the returned `path` is the resolved path returned
+  by `System.find_executable/1` and is not modified by this library.
   """
   @spec executable() :: {:ok, Path.t()} | {:error, :docker_not_found}
   def executable() do
@@ -185,6 +192,29 @@ defmodule DockerAvailability do
 
   `status` is the Docker command exit status. `output` is the trimmed combined
   standard output and standard error from the Docker command.
+
+  Probe order:
+
+  1. Resolve the Docker executable by calling `executable/0`.
+  2. Run the resolved executable with `["version", "--format", "{{.Client.Version}}"]`.
+  3. Only if the client-version command succeeds, run the same resolved
+     executable with `["version", "--format", "{{.Server.Version}}"]`.
+
+  In shell form, the version probes are equivalent to:
+
+      /path/to/docker version --format '{{.Client.Version}}'
+      /path/to/docker version --format '{{.Server.Version}}'
+
+  If the client-version command fails, this function returns
+  `{:error, {:docker_command_failed, status, output}}`.
+
+  If the server-version command fails, this function returns
+  `{:error, {:docker_unavailable, status, output}}`.
+
+  The `:client_version` and `:server_version` fields are the trimmed outputs
+  of the corresponding successful version commands. They are returned as
+  opaque strings; this library does not parse, normalize, or validate Docker
+  version syntax beyond trimming surrounding whitespace.
   """
   @spec check() :: check_result()
   def check() do
